@@ -373,11 +373,42 @@ namespace RedBlackTree
 
         public void ValidateInOrderTraverse()
         {
-            ValidateInOrderTraverse(root);
-            Console.WriteLine();
+            Console.WriteLine("Validating all of the Red Back Tree requirements:\n");
+
+            SortedDictionary<T, int> blackNodeCount = new SortedDictionary<T, int>();
+            ValidateInOrderTraverse(root, blackNodeCount);
+
+            int theBlackNodeCountForTree = 0;
+            bool failedToValidate = false;
+            foreach (KeyValuePair<T, int> pair in blackNodeCount)
+            {
+                if ( pair.Value > 0 )
+                {
+                    if ( theBlackNodeCountForTree == 0 )
+                    {
+                        theBlackNodeCountForTree = pair.Value;
+                    }
+                    else if ( pair.Value != theBlackNodeCountForTree )
+                    {
+                        failedToValidate = true;
+                        Console.WriteLine($"Violation: found at least two different block node counts for leafs: {theBlackNodeCountForTree} and {pair.Value}.");
+                        break;
+                    }
+                }
+            }
+
+            if ( failedToValidate )
+            {
+                Console.Write("( ");
+                foreach (KeyValuePair<T, int> pair in blackNodeCount)
+                {
+                    Console.Write($"({pair.Key}, {pair.Value}) ");
+                }
+                Console.WriteLine(")\n");
+            }
         }
 
-        protected void ValidateInOrderTraverse(Node node)
+        protected void ValidateInOrderTraverse(Node node, SortedDictionary<T, int> blackNodeCount)
         {
             if ( node == root && node.color != NodeColor.Black )
             {
@@ -391,34 +422,34 @@ namespace RedBlackTree
 
             if ( node.leftChild == null || node.rightChild == null )
             {
-                int blackNodeCount = 0;
+                blackNodeCount[node.value] = 0;
                 Node thisNode = node;
                 while ( thisNode != null )
                 {
                     if ( thisNode.color == NodeColor.Black )
                     {
-                        blackNodeCount++;
+                        blackNodeCount[node.value]++;
                     }
                     thisNode = thisNode.parent;
                 }
-                Console.Write($"(node={node.value},blacks={blackNodeCount}) ");
             }
 
             if ( node.leftChild != null )
             {
-                ValidateInOrderTraverse(node.leftChild);
+                ValidateInOrderTraverse(node.leftChild, blackNodeCount);
             }
 
             if ( node.rightChild != null )
             {
-                ValidateInOrderTraverse(node.rightChild);
+                ValidateInOrderTraverse(node.rightChild, blackNodeCount);
             }
         }
 
         public void LogInOrderTraverse()
         {
+            Console.WriteLine("In order traversal of the Red Black BinaryTree. Inserted values should be in sorted order:\n");
             LogInOrderTraverse(root);
-            Console.WriteLine();
+            Console.WriteLine("\n");
         }
 
         protected void LogInOrderTraverse(Node node)
@@ -448,17 +479,17 @@ namespace RedBlackTree
             while (thisNode != null)
             {
                 char nodeColor = (thisNode.color == NodeColor.Red ? 'r' : thisNode.color == NodeColor.Black ? 'b' : 'n');
-                if (thisNode.parent == null)
+                if ( thisNode.parent == null )
                 {
                     Console.Write($"{thisNode.value}{nodeColor}");
                 }
                 else
                 {
-                    if (thisNode.parent.leftChild == thisNode)
+                    if ( thisNode.parent.leftChild == thisNode )
                     {
                         Console.Write($"{thisNode.value}{nodeColor} < ");
                     }
-                    if (thisNode.parent.rightChild == thisNode)
+                    if ( thisNode.parent.rightChild == thisNode )
                     {
                         Console.Write($"{thisNode.value}{nodeColor} > ");
                     }
@@ -470,14 +501,16 @@ namespace RedBlackTree
 
         public void LogTree()
         {
+            Console.WriteLine("Logging all of the NULL children (exclusive) path to root:\n");
             LogTree(root);
+            Console.WriteLine();
         }
 
         protected void LogTree(Node node)
         {
-            if ( node.leftChild == null && node.rightChild == null )
+            if ( node.leftChild == null || node.rightChild == null )
             {
-                // we are at a leaf node
+                // we are at a NULL child
                 LogNode(node);
             }
             else
