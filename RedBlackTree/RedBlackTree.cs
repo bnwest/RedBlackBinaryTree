@@ -38,9 +38,9 @@ using System.Threading.Tasks;
 
 namespace RedBlackTree
 {
-    public class RedBlackTree<T> where T : IComparable
+    public class RedBlackTree<T> where T : IComparable, new()
     {
-        protected enum NodeColor { None, Red, Black };
+        protected enum NodeColor { None, Red, Black, DoubleBlack };
         protected class Node
         {
             public T value;
@@ -51,6 +51,8 @@ namespace RedBlackTree
         }
 
         protected Node root;
+
+        protected Node DoubleBlack { get; set; }
 
         public RedBlackTree()
         {
@@ -64,10 +66,22 @@ namespace RedBlackTree
             return newNode;
         }
 
+        protected void ResetDoubleBlack()
+        {
+            DoubleBlack = new Node { value = new T(), parent = null, leftChild = null, rightChild = null, color = NodeColor.DoubleBlack };
+        }
+
         protected void MakeRoot(Node node)
         {
-            root = node;
-            node.parent = null;
+            if ( node == null )
+            {
+                root = null;
+            }
+            else
+            {
+                root = node;
+                node.parent = null;
+            }
         }
 
         protected void MakeLeftChild(Node parent, Node child)
@@ -85,6 +99,96 @@ namespace RedBlackTree
             if ( child != null )
             {
                 child.parent = parent;
+            }
+        }
+
+        protected void RemoveChildFromParent(Node child)
+        {
+            Node parent = child.parent;
+
+            if ( parent == null )
+            {
+                // child does not have parent and thus is root
+                MakeRoot(null);
+            }
+            else
+            {
+                if ( parent.leftChild == child )
+                {
+                    RemoveLeftChild(parent);
+                }
+                else if ( parent.rightChild == child )
+                {
+                    RemoveRightChild(parent);
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        protected void RemoveLeftChild(Node parent)
+        {
+            if ( parent.leftChild != null )
+            {
+                Node leftChild = parent.leftChild;
+                parent.leftChild = null;
+                leftChild.parent = null; 
+            }
+        }
+
+        protected void RemoveRightChild(Node parent)
+        {
+            if ( parent.rightChild != null )
+            {
+                Node rightChild = parent.rightChild;
+                parent.rightChild = null;
+                rightChild.parent = null;
+            }
+        }
+
+        protected void ReplaceParentWithChild(Node parent, Node child)
+        {
+            // hard assumption: parent only has one child.
+
+            bool parentHasNoChildren = ( parent.leftChild == null && parent.rightChild == null );
+            bool parentHasTwoChildren = ( parent.leftChild != null && parent.rightChild != null );
+            bool parentHasOneChild = ( !parentHasNoChildren && !parentHasTwoChildren);
+
+            if ( parentHasOneChild )
+            {
+                Node grandparent = parent.parent;
+                if ( grandparent == null )
+                {
+                    // parent is root
+                    RemoveChildFromParent(child);
+                    MakeRoot(child);
+                }
+                else
+                {
+                    bool parentIsLeftChildOfGrandParent = ( grandparent.leftChild == parent );
+                    bool parentIsRightChildOfGrandParent = ( grandparent.rightChild == parent );
+                    RemoveChildFromParent(parent);
+                    RemoveChildFromParent(child);
+                    if ( parentIsLeftChildOfGrandParent )
+                    {
+                        MakeLeftChild(grandparent, child);
+                    }
+                    else if ( parentIsRightChildOfGrandParent )
+                    {
+                        MakeRightChild(grandparent, child);
+                    }
+                    else
+                    {
+                        // grandparent does not have parent as one of its children
+                        throw new System.ArgumentException();
+                    }
+                }
+            }
+            else
+            {
+                throw new System.ArgumentException();
             }
         }
 
@@ -214,7 +318,7 @@ namespace RedBlackTree
             RightRightTransform(parent);
         }
 
-        protected void BalanceTree(Node newNode)
+        protected void BalanceTreeAfterInsert(Node newNode)
         {
             if ( newNode.parent == null )
             {
@@ -266,7 +370,7 @@ namespace RedBlackTree
                     newNode.parent.parent.color = NodeColor.Red;
 
                     // (iii) balance tree for x’s grandparent
-                    BalanceTree(newNode.parent.parent);
+                    BalanceTreeAfterInsert(newNode.parent.parent);
                 }
                 else if ( gotBlackUncle )
                 {
@@ -315,7 +419,7 @@ namespace RedBlackTree
             newNode.color = NodeColor.Red;
             //LogNode(newNode, "insert new value");
 
-            BalanceTree(newNode);
+            BalanceTreeAfterInsert(newNode);
             //LogTree();
             //ValidateInOrderTraverse();
             //LogInOrderTraverse();
@@ -335,7 +439,7 @@ namespace RedBlackTree
                     UnbalancedInsert(node.leftChild, newNode);
                 }
             }
-            else if (newNode.value.CompareTo(node.value) > 0)
+            else if ( newNode.value.CompareTo(node.value) > 0 )
             {
                 // newValue > value
                 if (node.rightChild == null)
@@ -348,7 +452,7 @@ namespace RedBlackTree
                 }
             }
             //else if ( EqualityComparer<T>.Default.Equals(newValue, root.value) )
-            else if (newNode.value.CompareTo(node.value) == 0)
+            else if ( newNode.value.CompareTo(node.value) == 0 )
             {
                 // newValue == value
                 // should never get here.  we require uniqueness, so do not insert duplicate value.
@@ -408,6 +512,158 @@ namespace RedBlackTree
             }
         }
 
+        protected Node FindSuccessor(Node node)
+        {
+            Node successor;
+
+            if ( node == null )
+            {
+                successor = null;
+            }
+            else if ( node.leftChild != null )
+            {
+                successor = FindSuccessor(node.leftChild);
+            }
+            else
+            {
+                successor = node;
+            }
+
+            return successor;
+        }
+
+        protected Node Find(Node node, T value)
+        {
+            bool nodeHasTargetValue = ( node.value.CompareTo(value) == 0 );
+            if ( nodeHasTargetValue )
+            {
+                return node;
+            }
+
+            Node matchingnode;
+
+            if ( node.leftChild != null )
+            {
+                matchingnode = Find(node.leftChild, value);
+                if ( matchingnode != null )
+                {
+                    return matchingnode;
+                }
+            }
+
+            if ( node.rightChild != null )
+            {
+                matchingnode = Find(node.rightChild, value);
+                if ( matchingnode != null )
+                {
+                    return matchingnode;
+                }
+            }
+
+            return null;
+        }
+
+        protected Node Find(T value)
+        {
+            Node node = Find(root, value);
+            return node;
+        }
+
+        public void Delete(T value)
+        {
+            Node node = Find(value);
+            if ( node == null )
+            {
+                return;
+            }
+
+            Node nodeDeleted, nodeReplacedDeleted;
+            UnbalancedDelete(node, out nodeDeleted, out nodeReplacedDeleted);
+
+            // balance tree after delete
+        }
+
+        protected void UnbalancedDelete(Node node, out Node nodeDeleted, out Node nodeReplacedDeleted)
+        {
+            bool nodeHasNoChildren = ( node.leftChild == null && node.rightChild == null );
+            bool nodeHasTwoChildren = ( node.leftChild != null && node.rightChild != null );
+            bool nodeHasOneChild = ( !nodeHasNoChildren && !nodeHasTwoChildren );
+
+            if ( nodeHasNoChildren )
+            {
+                RemoveChildFromParent(node);
+                nodeDeleted = node;
+                if ( nodeDeleted.color == NodeColor.Black )
+                {
+                    ResetDoubleBlack();
+                    nodeReplacedDeleted = DoubleBlack;
+                }
+                else
+                {
+                    nodeReplacedDeleted = null;  // implicit SingleBlack node
+                }
+            }
+            else if ( nodeHasOneChild )
+            {
+                Node child = ( node.leftChild ?? node.rightChild );  // example of the null-coalescing (binary) operator
+                ReplaceParentWithChild(node, child);
+                nodeDeleted = node;
+                nodeReplacedDeleted = child;
+            }
+            else // if ( nodeHasTwoChildren )
+            {
+                Node successor = FindSuccessor(node.rightChild); // returns rightChild or its left most descendent
+                // successor has no children or single right child
+
+                // swap values for node and successor (in preparation for deleting)
+                T swap = node.value;
+                node.value = successor.value;
+                successor.value = swap;
+                // binary tree is now broke since successor's value breaks the rules
+                // but not to worry, next step is delete successor
+
+                nodeDeleted = successor;
+
+                bool successorHasNoChildren = ( successor.leftChild == null && successor.rightChild == null );
+                bool successorHasRightChild = ( successor.rightChild != null );
+                if ( successorHasRightChild )
+                {
+                    Node rightChild = successor.rightChild;
+                    ReplaceParentWithChild(successor, rightChild);
+
+                    if ( nodeDeleted.color == NodeColor.Black )
+                    {
+                        nodeReplacedDeleted = rightChild;
+                    }
+                    else
+                    {
+                        nodeReplacedDeleted = null;
+                    }
+                }
+                else if ( successorHasNoChildren )
+                {
+                    if ( nodeDeleted.color == NodeColor.Black )
+                    {
+                        ResetDoubleBlack();
+                        // bit of a hack
+                        MakeLeftChild(successor, DoubleBlack);
+                        ReplaceParentWithChild(successor, DoubleBlack);
+                        nodeReplacedDeleted = DoubleBlack;
+                    }
+                    else
+                    {
+                        RemoveChildFromParent(successor);
+                        nodeReplacedDeleted = null;
+                    }
+                }
+                else
+                {
+                    // successor should not have two children
+                    throw new System.InvalidOperationException();
+                }
+            }
+        }
+
         protected void ValidateInOrderTraverse(Node node, SortedDictionary<T, int> blackNodeCount)
         {
             if ( node == root && node.color != NodeColor.Black )
@@ -448,8 +704,11 @@ namespace RedBlackTree
         public void LogInOrderTraverse()
         {
             Console.WriteLine("In order traversal of the Red Black BinaryTree. Inserted values should be in sorted order:\n");
-            LogInOrderTraverse(root);
-            Console.WriteLine("\n");
+            if ( root != null )
+            {
+                LogInOrderTraverse(root);
+                Console.WriteLine("\n");
+            }
         }
 
         protected void LogInOrderTraverse(Node node)
@@ -459,7 +718,10 @@ namespace RedBlackTree
                 LogInOrderTraverse(node.leftChild);
             }
 
-            char nodeColor = (node.color == NodeColor.Red ? 'r' : node.color == NodeColor.Black ? 'b' : 'n');
+            string nodeColor = ( node.color == NodeColor.Red ? "r" : 
+                                 node.color == NodeColor.Black ? "b" : 
+                                 node.color == NodeColor.DoubleBlack ? "bb" : 
+                                 "n");
             Console.Write($"{node.value}{nodeColor} ");
 
             if ( node.rightChild != null )
