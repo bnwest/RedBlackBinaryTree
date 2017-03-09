@@ -32,7 +32,7 @@ namespace RedBlackTree
 
         static void Main(string[] args)
         {
-            const int treeNodeCount = 10; // readonly instead?
+            const int treeNodeCount = 100; // readonly instead?
 
             int[] values = new int[treeNodeCount];
             for (int i = 0; i < treeNodeCount; i++)
@@ -47,8 +47,12 @@ namespace RedBlackTree
             RandomizeValues(values);
 
             // test only
-            values = new int[treeNodeCount] { 9, 4, 2, 7, 5, 10, 1, 8, 3, 6 };
+            // values = new int[treeNodeCount] { 9, 4, 2, 7, 5, 10, 1, 8, 3, 6 };
             // values = new int[treeNodeCount] { 8, 1, 3, 6, 2, 10, 4, 7, 5, 9 };
+
+            Console.Write("Insert order: { ");
+            foreach (var value in values) Console.Write($"{value}, ");
+            Console.WriteLine("}\n");
 
             //
             // insert a new node in the Red Black Tree.
@@ -70,18 +74,28 @@ namespace RedBlackTree
             RandomizeValues(values);
 
             // test only
-            // values = new int[treeNodeCount] { 9, 4, 2, 7, 5, 10, 1, 8, 3, 6 };
-            // values = new int[treeNodeCount] { 8, 1, 3, 6, 2, 10, 4, 7, 5, 9 };
-            // values = new int[treeNodeCount] { 6, 1, 9, 10, 5, 8, 4, 7, 3, 2 }; // no DoubleBlack
+            // insert order: values = new int[treeNodeCount] { 9, 4, 2, 7, 5, 10, 1, 8, 3, 6, };
+            // delete order: values = new int[treeNodeCount] { 8, 1, 3, 6, 2, 10, 4, 7, 5, 9, }; // LCase {1,2} RCase {2}
+            // delete order: values = new int[treeNodeCount] { 10, 9, 8, 2, 3, 4, 6, 7, 5, 1, }; // LCase {2} RCase {2,3,4}
+            // delete order: values = new int[treeNodeCount] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, }; // LCase {1,2,4}  RCase {}
+
+            // insert order: values = new int[treeNodeCount] { 5, 3, 8, 6, 9, 4, 10, 7, 1, 2, };
+            // delete order: values = new int[treeNodeCount] { 7, 5, 9, 8, 6, 4, 1, 10, 2, 3, }; // LCase {4} RCase {1,2}
+
+            // insert order: values = new int[treeNodeCount] { 5, 4, 3, 7, 6, 10, 1, 8, 9, 2, };
+            // delete order: values = new int[treeNodeCount] { 7, 3, 6, 4, 8, 2, 9, 10, 5, 1, }; // LCase {2,3,4} RCase {2,4}
+
+            Console.Write("Delete order: { ");
+            foreach (var value in values) Console.Write($"{value}, ");
+            Console.WriteLine("}\n");
 
             for (int i = 0; i < treeNodeCount; i++)
             {
+                //Console.WriteLine($"Deleting {values[i]} from RBT ...");
                 redBlackTree.Delete(values[i]);
-                Console.WriteLine($"Deleting {values[i]} from RBT.");
-                redBlackTree.LogInOrderTraverse();
             }
 
-            RandomizeValues(values);
+            redBlackTree.LogInOrderTraverse();
         }
     }
 }

@@ -36,11 +36,17 @@ using System.Threading.Tasks;
  *
  */
 
+/*
+ * Two resources for Red Black Tree deletion:
+ *    http://software.ucv.ro/~mburicea/lab8ASD.pdf
+ *    http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
+ */
+
 namespace RedBlackTree
 {
     public class RedBlackTree<T> where T : IComparable, new()
     {
-        protected enum NodeColor { None, Red, Black, DoubleBlack };
+        protected enum NodeColor { None, Red, Black };
         protected class Node
         {
             public T value;
@@ -52,7 +58,7 @@ namespace RedBlackTree
 
         protected Node root;
 
-        protected Node DoubleBlack { get; set; }
+        protected Node NullBlack { get; set; }
 
         public RedBlackTree()
         {
@@ -66,9 +72,9 @@ namespace RedBlackTree
             return newNode;
         }
 
-        protected void ResetDoubleBlack()
+        protected void ResetNullBlack()
         {
-            DoubleBlack = new Node { value = new T(), parent = null, leftChild = null, rightChild = null, color = NodeColor.DoubleBlack };
+            NullBlack = new Node { value = new T(), parent = null, leftChild = null, rightChild = null, color = NodeColor.Black };
         }
 
         protected void MakeRoot(Node node)
@@ -197,6 +203,7 @@ namespace RedBlackTree
             // move up node.leftChild, node's parent now points at it
             // node.leftChild makes old parent it's right child
             // node.leftChild old right child is now parent's new left child
+
             Node leftChild = node.leftChild;
             Node leftChildRightChild = leftChild?.rightChild; // example of a null-conditioned operator
 
@@ -233,6 +240,7 @@ namespace RedBlackTree
             // move up node.rightChild, node's parent now points at it
             // node rightChild make old parent it's left child
             // node rightChild old left child is now parent's new right child
+
             Node rightChild = node.rightChild;
             Node rightChildLeftChild = rightChild?.leftChild;
 
@@ -268,6 +276,7 @@ namespace RedBlackTree
         {
             // 1. Right rotate grandParent
             // 2. swap colors for parent and grandparent
+
             Node parent = node.parent;
             Node grandParent = node.parent.parent;
 
@@ -283,6 +292,7 @@ namespace RedBlackTree
         {
             // 1. Left rotate parent
             // 2. Apply Left Left transform on parent
+
             Node parent = node.parent;
 
             LeftRotate(parent);
@@ -295,6 +305,7 @@ namespace RedBlackTree
         {
             // 1. Left rotate grandParent
             // 2. swap colors for parent and grandparent
+
             Node parent = node.parent;
             Node grandParent = node.parent.parent;
 
@@ -310,6 +321,7 @@ namespace RedBlackTree
         {
             // 1. Right rotate parent
             // 2. Apply Right Right transform on parent
+
             Node parent = node.parent;
 
             RightRotate(parent);
@@ -456,6 +468,7 @@ namespace RedBlackTree
             {
                 // newValue == value
                 // should never get here.  we require uniqueness, so do not insert duplicate value.
+                throw new System.InvalidOperationException();
             }
         }
 
@@ -475,9 +488,66 @@ namespace RedBlackTree
             return newNode;
         }
 
-        public void ValidateInOrderTraverse()
+        protected void ValidateInOrderTraverse(Node node, SortedDictionary<T, int> blackNodeCount)
         {
-            Console.WriteLine("Validating all of the Red Back Tree requirements:\n");
+            if ( node == root && root == null )
+            {
+                return;
+            }
+
+            if ( root != null && node == root && node.color != NodeColor.Black )
+            {
+                Console.WriteLine("**** Violation: root is not black.");
+                throw new System.InvalidOperationException();
+            }
+
+            if ( node.parent != null && node.color == NodeColor.Red && node.parent.color == NodeColor.Red )
+            {
+                Console.WriteLine("**** Violation: two adjacent nodes are red.");
+                throw new System.InvalidOperationException();
+            }
+
+            if ( node.leftChild == null || node.rightChild == null )
+            {
+                blackNodeCount[node.value] = 0;
+                Node thisNode = node;
+                while (thisNode != null)
+                {
+                    if (thisNode.color == NodeColor.Black)
+                    {
+                        blackNodeCount[node.value]++;
+                    }
+                    thisNode = thisNode.parent;
+                }
+            }
+
+            if ( node.leftChild != null )
+            {
+                if ( node.value.CompareTo(node.leftChild.value) < 0 )
+                {
+                    Console.WriteLine($"**** Violation: value of the node({node.value}) should be greater than the value of its left child({node.leftChild.value}).");
+                    throw new System.InvalidOperationException();
+                }
+                ValidateInOrderTraverse(node.leftChild, blackNodeCount);
+            }
+
+            if ( node.rightChild != null )
+            {
+                if (node.value.CompareTo(node.rightChild.value) > 0)
+                {
+                    Console.WriteLine($"**** Violation: value of the node({node.value}) should be greater than the value of its right child({node.rightChild.value}).");
+                    throw new System.InvalidOperationException();
+                }
+                ValidateInOrderTraverse(node.rightChild, blackNodeCount);
+            }
+        }
+
+        public void ValidateInOrderTraverse(bool includeHeader = true)
+        {
+            if ( includeHeader )
+            {
+                Console.WriteLine("Validating all of the Red Back Tree requirements:\n");
+            }
 
             SortedDictionary<T, int> blackNodeCount = new SortedDictionary<T, int>();
             ValidateInOrderTraverse(root, blackNodeCount);
@@ -495,7 +565,7 @@ namespace RedBlackTree
                     else if ( pair.Value != theBlackNodeCountForTree )
                     {
                         failedToValidate = true;
-                        Console.WriteLine($"Violation: found at least two different block node counts for leafs: {theBlackNodeCountForTree} and {pair.Value}.");
+                        Console.WriteLine($"**** Violation: found at least two different block node counts for leafs: {theBlackNodeCountForTree} and {pair.Value}.");
                         break;
                     }
                 }
@@ -503,12 +573,13 @@ namespace RedBlackTree
 
             if ( failedToValidate )
             {
-                Console.Write("( ");
+                Console.Write("**** ( ");
                 foreach (KeyValuePair<T, int> pair in blackNodeCount)
                 {
                     Console.Write($"({pair.Key}, {pair.Value}) ");
                 }
                 Console.WriteLine(")\n");
+                throw new System.InvalidOperationException();
             }
         }
 
@@ -580,7 +651,17 @@ namespace RedBlackTree
             Node nodeDeleted, nodeReplacedDeleted;
             UnbalancedDelete(node, out nodeDeleted, out nodeReplacedDeleted);
 
-            // balance tree after delete
+            // balance tree after delete, if a black node has been deleted
+            // since not all paths from root to leaf still have the black count.
+
+            bool blackNodeDeleted = ( nodeDeleted.color == NodeColor.Black );
+            if ( blackNodeDeleted )
+            {
+                BalanceTreeAfterDelete(nodeReplacedDeleted);
+                //LogTree();
+                ValidateInOrderTraverse(false);  // silently validate the black node deletion rebalance
+                //LogInOrderTraverse();
+            }
         }
 
         protected void UnbalancedDelete(Node node, out Node nodeDeleted, out Node nodeReplacedDeleted)
@@ -591,15 +672,41 @@ namespace RedBlackTree
 
             if ( nodeHasNoChildren )
             {
-                RemoveChildFromParent(node);
                 nodeDeleted = node;
                 if ( nodeDeleted.color == NodeColor.Black )
                 {
-                    ResetDoubleBlack();
-                    nodeReplacedDeleted = DoubleBlack;
+                    bool nodeIsRoot = ( node == root );
+                    bool nodeIsLeftChild  = ( !nodeIsRoot && node == node.parent.leftChild );
+                    bool nodeIsRightChild = ( !nodeIsRoot && node == node.parent.rightChild );
+                    Node parent = ( node.parent ?? null );
+                    nodeIsLeftChild  = ( node == node.parent?.leftChild );
+                    nodeIsRightChild = ( node == node.parent?.rightChild );
+
+                    RemoveChildFromParent(node);
+
+                    if ( nodeIsLeftChild || nodeIsRightChild )
+                    {
+                        ResetNullBlack();
+                        nodeReplacedDeleted = NullBlack;
+
+                        if (nodeIsLeftChild )
+                        {
+                            MakeLeftChild(parent, NullBlack);
+                        }
+                        else if ( nodeIsRightChild )
+                        {
+                            MakeRightChild(parent, NullBlack);
+                        }
+                    }
+                    else
+                    {
+                        // node is root
+                        nodeReplacedDeleted = null;
+                    }
                 }
                 else
                 {
+                    RemoveChildFromParent(node);
                     nodeReplacedDeleted = null;  // implicit SingleBlack node
                 }
             }
@@ -619,7 +726,7 @@ namespace RedBlackTree
                 T swap = node.value;
                 node.value = successor.value;
                 successor.value = swap;
-                // binary tree is now broke since successor's value breaks the rules
+                // binary tree is now broken since successor's new value breaks the rules
                 // but not to worry, next step is delete successor
 
                 nodeDeleted = successor;
@@ -644,11 +751,11 @@ namespace RedBlackTree
                 {
                     if ( nodeDeleted.color == NodeColor.Black )
                     {
-                        ResetDoubleBlack();
+                        ResetNullBlack();
                         // bit of a hack
-                        MakeLeftChild(successor, DoubleBlack);
-                        ReplaceParentWithChild(successor, DoubleBlack);
-                        nodeReplacedDeleted = DoubleBlack;
+                        MakeLeftChild(successor, NullBlack);
+                        ReplaceParentWithChild(successor, NullBlack);
+                        nodeReplacedDeleted = NullBlack;
                     }
                     else
                     {
@@ -658,52 +765,242 @@ namespace RedBlackTree
                 }
                 else
                 {
-                    // successor should not have two children
+                    // successor should not have two children or a single left child
                     throw new System.InvalidOperationException();
                 }
             }
         }
 
-        protected void ValidateInOrderTraverse(Node node, SortedDictionary<T, int> blackNodeCount)
+        protected void BalanceTreeAfterDelete(Node node)
         {
-            if ( node == root && node.color != NodeColor.Black )
+            if ( root == null )
             {
-                Console.WriteLine("Violation: root is not black.");
+                // the black node deleted was the root
+                return;
             }
 
-            if ( node.parent != null && node.color == NodeColor.Red && node.parent.color == NodeColor.Red )
-            {
-                Console.WriteLine("Violation: two adjacent nodes are red.");
-            }
+            bool leftChildOfRightSiblingIsBlack;
+            bool rightChildOfRightSiblingIsBlack;
+            bool leftChildOfLeftSiblingIsBlack;
+            bool rightChildOfLeftSiblingIsBlack;
 
-            if ( node.leftChild == null || node.rightChild == null )
+            while ( node != root && node.color == NodeColor.Black )
             {
-                blackNodeCount[node.value] = 0;
-                Node thisNode = node;
-                while ( thisNode != null )
+                //  node is the nonroot black node that has an implicit extra black
+
+                bool isLeftChild = ( node == node.parent.leftChild );
+                if ( isLeftChild )
                 {
-                    if ( thisNode.color == NodeColor.Black )
+                    // node is the left child of its parent
+
+                    Node rightSibling = node.parent.rightChild;
+
+                    if ( rightSibling.color == NodeColor.Red )
                     {
-                        blackNodeCount[node.value]++;
+                        // Left Child: Case 1
+                        //Console.WriteLine("Left Child: Case 1");
+
+                        // both of rightSibling's children are non-null and black.
+                        // node is double black => rightSibling subtree contains an extra black
+                        // rightSibling is red => each child subtree contains an extra black => each child is non-null
+                        // rightSibling is red and has non-null children => children can not be red => children are non-null and black
+                        // rightSibling is red => parent node and rightSibling can not both be red => parent is black
+
+                        rightSibling.color = NodeColor.Black;
+                        node.parent.color = NodeColor.Red;
+                        LeftRotate(node.parent);
+                        rightSibling = node.parent.rightChild;
                     }
-                    thisNode = thisNode.parent;
+
+                    // both node and rightSibling are now black
+
+                    leftChildOfRightSiblingIsBlack  = 
+                        ( rightSibling.leftChild == null || rightSibling.leftChild.color == NodeColor.Black );
+                    rightChildOfRightSiblingIsBlack = 
+                        ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
+
+                    if ( leftChildOfRightSiblingIsBlack && rightChildOfRightSiblingIsBlack )
+                    {
+                        // Left Child: Case 2
+                        //Console.WriteLine("Left Child: Case 2");
+
+                        // node is double black => rightSibling subtree contains an extra black
+                        // rightSibling is black => children may be null and black
+                        // when node is null => both rightSibling's children are null
+                        // parent of node is of unknown color
+
+                        rightSibling.color = NodeColor.Red;
+
+                        // moving node up the tree to its parent
+                        // made rightSibling red => took a black out of the red subtree
+                        // node and rightSibling both need an extra black => push the extra black to the parent
+                        // when parent and rightSibling are now both red => fall out of the main loop => parent is made black => done
+                        // when parent is black => restart the loop with the parent being the extra black node
+
+                        Node parent = node.parent;
+                        if ( node == NullBlack )
+                        {
+                            // turn back into a regular null
+                            RemoveChildFromParent(node);
+                        }
+                        node = parent;
+                    }
+                    else
+                    {
+                        // rightSibling has at least one red child
+
+                        rightChildOfRightSiblingIsBlack =
+                            ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
+
+                        if ( rightChildOfRightSiblingIsBlack )
+                        {
+                            // Left Child: Case 3
+                            //Console.WriteLine("Left Child: Case 3");
+
+                            // rightSibling's right child is black, possibly null
+                            // rightSibling's left child is red
+                            // parent of node and rightSibling is of unknown color
+
+                            rightSibling.leftChild.color = NodeColor.Black;
+                            rightSibling.color = NodeColor.Red;
+                            RightRotate(rightSibling);
+                            rightSibling = node.parent.rightChild;
+                        }
+
+                        // rightSibling's right child is red
+
+                        // Left Child: Case 4
+                        //Console.WriteLine("Left Child: Case 4");
+
+                        // node and rightSibling are both black
+                        // rightSibling's left child is black and right child is red
+                        // below transform balances the tree 
+                        // from parent's right subtree, we remove a red node, made it black and add it to the left subtree
+                        // parent of node and rightSibling is of unknown color
+
+                        rightSibling.color = node.parent.color;
+                        node.parent.color = NodeColor.Black;
+                        rightSibling.rightChild.color = NodeColor.Black;
+                        LeftRotate(node.parent);
+
+                        if ( node == NullBlack )
+                        {
+                            // can turn this back into a regular null
+                            RemoveChildFromParent(node);
+                        }
+                        node = root;
+                    }
+                }
+                else
+                {
+                    // node is the right child of its parent
+
+                    Node leftSibling = node.parent.leftChild;
+
+                    if ( leftSibling.color == NodeColor.Red )
+                    {
+                        // Right Child: Case 1
+                        //Console.WriteLine("Right Child: Case 1");
+
+                        // both of leftSibling's children are non-null and black.
+                        // node is double black => leftSibling subtree contains an extra black
+                        // leftSibling is red => each child subtree contains an extra black => each child is non-null
+                        // leftSibling is red and has non-null children => children can not be red => children are non-null and black
+                        // leftSibling is red => parent node and leftSibling can not both be red => parent is black
+
+                        leftSibling.color = NodeColor.Black;
+                        node.parent.color = NodeColor.Red;
+                        RightRotate(node.parent);
+                        leftSibling = node.parent.leftChild;
+                    }
+
+                    // both node and leftSibling are now black
+
+                    leftChildOfLeftSiblingIsBlack =
+                        ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black );
+                    rightChildOfLeftSiblingIsBlack =
+                        ( leftSibling.rightChild == null || leftSibling.rightChild.color == NodeColor.Black );
+
+                    if ( leftChildOfLeftSiblingIsBlack && rightChildOfLeftSiblingIsBlack )
+                    {
+                        // Right Child: Case 2
+                        //Console.WriteLine("Right Child: Case 2");
+
+                        // node is double black => leftSibling subtree contains an extra black
+                        // leftSibling is black => children may be null and black
+                        // when node is null => both leftSibling's children are null
+                        // parent of node is of unknown color
+
+                        leftSibling.color = NodeColor.Red;
+
+                        // moving node up the tree to its parent
+                        // made leftSibling red => took a black out of the left subtree
+                        // node and leftSibling both need an extra black => push the extra black to the parent
+                        // when parent and leftSibling are now both red => fall out of the main loop => parent is made black => done
+                        // when parent is black => restart the loop with the parent being the extra black node
+
+                        Node parent = node.parent;
+                        if (node == NullBlack)
+                        {
+                            // turn back into a regular null
+                            RemoveChildFromParent(node);
+                        }
+                        node = parent;
+                    }
+                    else
+                    {
+                        // leftSibling has at least one red child
+
+                        leftChildOfLeftSiblingIsBlack =
+                            ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
+
+                        if ( leftChildOfLeftSiblingIsBlack )
+                        {
+                            // Right Child: Case 3
+                            //Console.WriteLine("Right Child: Case 3");
+
+                            // leftSibling's left child is black, possibly null
+                            // leftSibling's right child is red
+                            // parent of node and rightSibling is of unknown color
+
+                            leftSibling.rightChild.color = NodeColor.Black;
+                            leftSibling.color = NodeColor.Red;
+                            LeftRotate(leftSibling);
+                            leftSibling = node.parent.leftChild;
+                        }
+
+                        // leftSibling's left child is red
+
+                        // Right Child: Case 4
+                        //Console.WriteLine("Right Child: Case 4");
+
+                        // node and leftSibling are both black
+                        // leftSibling's right child is black and left child is red
+                        // below transform balances the tree 
+                        // from parent's left subtree, we remove a red node, made it black and add it to the right subtree
+                        // parent of node and rightSibling is of unknown color
+
+                        leftSibling.color = node.parent.color;
+                        node.parent.color = NodeColor.Black;
+                        leftSibling.leftChild.color = NodeColor.Black;
+                        RightRotate(node.parent);
+
+                        if ( node == NullBlack )
+                        {
+                            // can turn this back into a regular null
+                            RemoveChildFromParent(node);
+                        }
+                        node = root;
+                    }
                 }
             }
 
-            if ( node.leftChild != null )
-            {
-                ValidateInOrderTraverse(node.leftChild, blackNodeCount);
-            }
-
-            if ( node.rightChild != null )
-            {
-                ValidateInOrderTraverse(node.rightChild, blackNodeCount);
-            }
+            node.color = NodeColor.Black;
         }
 
         public void LogInOrderTraverse()
         {
-            Console.WriteLine("In order traversal of the Red Black BinaryTree. Inserted values should be in sorted order:\n");
+            Console.WriteLine("In order traversal of the Red Black Binary Tree. Values should be in sorted order:\n");
             if ( root != null )
             {
                 LogInOrderTraverse(root);
@@ -720,7 +1017,6 @@ namespace RedBlackTree
 
             string nodeColor = ( node.color == NodeColor.Red ? "r" : 
                                  node.color == NodeColor.Black ? "b" : 
-                                 node.color == NodeColor.DoubleBlack ? "bb" : 
                                  "n");
             Console.Write($"{node.value}{nodeColor} ");
 
@@ -770,9 +1066,15 @@ namespace RedBlackTree
 
         protected void LogTree(Node node)
         {
+            if ( node == root && node == null )
+            {
+                // empty RBT
+                return;
+            }
+
             if ( node.leftChild == null || node.rightChild == null )
             {
-                // we are at a NULL child
+                // we are at a leaf child
                 LogNode(node);
             }
             else
