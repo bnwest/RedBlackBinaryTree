@@ -59,6 +59,7 @@ namespace RedBlackTree
             //
 
             var redBlackTree = new RedBlackTree<int>();
+
             for (int i = 0; i < treeNodeCount; i++)
             {
                 redBlackTree.Insert(values[i]);
@@ -66,6 +67,13 @@ namespace RedBlackTree
             redBlackTree.LogTree();
             redBlackTree.ValidateInOrderTraverse();
             redBlackTree.LogInOrderTraverse();
+
+            Console.Write("Iterate over Red Black Tree:\n{ ");
+            foreach (int value in redBlackTree.GetEnumerator())
+            {
+                Console.Write($"{value}, ");
+            }
+            Console.WriteLine("}\n");
 
             //
             // randomize the order of values[] before delete.

@@ -42,6 +42,10 @@ using System.Threading.Tasks;
  *    http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
  */
 
+/*
+ * C# 6.0 in a Nutshell: claims that SortedDictionary is implemented as a Red Black Tree.
+ */
+
 namespace RedBlackTree
 {
     public class RedBlackTree<T> where T : IComparable, new()
@@ -74,7 +78,7 @@ namespace RedBlackTree
 
         protected void ResetNullBlack()
         {
-            NullBlack = new Node { value = new T(), parent = null, leftChild = null, rightChild = null, color = NodeColor.Black };
+            NullBlack = new Node { value = default(T), parent = null, leftChild = null, rightChild = null, color = NodeColor.Black };
         }
 
         protected void MakeRoot(Node node)
@@ -1088,6 +1092,36 @@ namespace RedBlackTree
                     LogTree(node.rightChild);
                 }
             }
+        }
+
+        //
+        // implement IEnumerable<T> without including its as an interface
+        //
+
+        protected IEnumerable<T> RecursivelyIterate(Node node)
+        {
+            if ( node.leftChild != null )
+            {
+                foreach (var child in RecursivelyIterate(node.leftChild))
+                {
+                    yield return child;
+                }
+            }
+
+            yield return node.value;
+
+            if ( node.rightChild != null )
+            {
+                foreach (var child in RecursivelyIterate(node.rightChild))
+                {
+                    yield return child;
+                }
+            }
+        }
+
+        public IEnumerable<T> GetEnumerator()
+        {
+            return RecursivelyIterate(root);
         }
     }
 }
