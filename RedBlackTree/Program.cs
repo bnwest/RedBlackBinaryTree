@@ -62,7 +62,7 @@ namespace RedBlackTree
 
             for (int i = 0; i < treeNodeCount; i++)
             {
-                redBlackTree.Insert(values[i]);
+                redBlackTree.Add(values[i]);
             }
             redBlackTree.LogTree();
             redBlackTree.ValidateInOrderTraverse();
@@ -100,7 +100,7 @@ namespace RedBlackTree
             for (int i = 0; i < treeNodeCount; i++)
             {
                 //Console.WriteLine($"Deleting {values[i]} from RBT ...");
-                redBlackTree.Delete(values[i]);
+                redBlackTree.Remove(values[i]);
             }
 
             redBlackTree.LogInOrderTraverse();

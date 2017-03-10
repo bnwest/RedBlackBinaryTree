@@ -48,8 +48,12 @@ using System.Threading.Tasks;
 
 namespace RedBlackTree
 {
-    public class RedBlackTree<T> where T : IComparable, new()
+    public class RedBlackTree<T> where T : IComparable // , ICollection<T>, IEnumerable<T>, IEnumerable
     {
+        // ICollection<T> requires
+        public int Count { get; set; }
+        public bool IsReadOnly { get; set; }
+
         protected enum NodeColor { None, Red, Black };
         protected class Node
         {
@@ -429,9 +433,10 @@ namespace RedBlackTree
             }
         }
 
-        public void Insert(T newValue)
+        // ICollection<T> requires
+        public void Add(T item)
         {
-            Node newNode = UnbalancedInsert(newValue);
+            Node newNode = UnbalancedInsert(item);
             newNode.color = NodeColor.Red;
             //LogNode(newNode, "insert new value");
 
@@ -439,6 +444,8 @@ namespace RedBlackTree
             //LogTree();
             //ValidateInOrderTraverse();
             //LogInOrderTraverse();
+
+            Count++;
         }
 
         protected void UnbalancedInsert(Node node, Node newNode)
@@ -638,13 +645,20 @@ namespace RedBlackTree
             return null;
         }
 
+        // ICollection<T> requires
+        public bool Contains(T value)
+        {
+            return ( Find(value) != null );
+        }
+
         protected Node Find(T value)
         {
             Node node = Find(root, value);
             return node;
         }
 
-        public void Delete(T value)
+        // ICollection<T> requires
+        public void Remove(T value)
         {
             Node node = Find(value);
             if ( node == null )
@@ -666,6 +680,8 @@ namespace RedBlackTree
                 ValidateInOrderTraverse(false);  // silently validate the black node deletion rebalance
                 //LogInOrderTraverse();
             }
+
+            Count--;
         }
 
         protected void UnbalancedDelete(Node node, out Node nodeDeleted, out Node nodeReplacedDeleted)
@@ -1094,10 +1110,27 @@ namespace RedBlackTree
             }
         }
 
-        //
-        // implement IEnumerable<T> without including its as an interface
-        //
 
+        // ICollection<T> requires
+        public void CopyTo(T[] array, int arrayInex)
+        {
+            int idx = arrayInex;
+            foreach (T value in GetEnumerator())
+            {
+                array[idx++] = value;
+            }
+        }
+
+        // ICollection<T> requires
+        public void Clear()
+        {
+            root = null;
+            Count = 0;
+        }
+
+        // compiler parses "yield return" and 
+        // builds a hidden nested enumerator class and 
+        // refactors below method to return it
         protected IEnumerable<T> RecursivelyIterate(Node node)
         {
             if ( node.leftChild != null )
@@ -1119,9 +1152,10 @@ namespace RedBlackTree
             }
         }
 
+        // IEnumerable<T> requires
         public IEnumerable<T> GetEnumerator()
         {
-            return RecursivelyIterate(root);
+            return ( root == null ? null : RecursivelyIterate(root) ) ;
         }
     }
 }
