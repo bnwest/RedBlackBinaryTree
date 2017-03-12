@@ -56,7 +56,7 @@ namespace RedBlackTree
             Console.WriteLine("}\n");
 
             //
-            // insert a new node in the Red Black Tree.
+            // insert new nodes in the Red Black Tree.
             //
 
             var redBlackTree = new RedBlackTree<int>();
@@ -69,9 +69,11 @@ namespace RedBlackTree
             redBlackTree.ValidateInOrderTraverse();
             redBlackTree.LogInOrderTraverse();
 
-            Console.Write("Iterate over Red Black Tree:\n{ ");
+            //
+            // iterate over the Red Black Tree.
+            //
 
-            //foreach (int value in redBlackTree.RecursivelyIterate())
+            Console.Write("Iterate over Red Black Tree:\n{ ");
             foreach (int value in redBlackTree)
             {
                 Console.Write($"{value}, ");
@@ -99,6 +101,10 @@ namespace RedBlackTree
             Console.Write("Delete order: { ");
             foreach (var value in values) Console.Write($"{value}, ");
             Console.WriteLine("}\n");
+
+            //
+            // delete nodes in the Red Black Tree.
+            //
 
             for (int i = 0; i < treeNodeCount; i++)
             {

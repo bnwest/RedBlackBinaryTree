@@ -204,11 +204,11 @@ namespace RedBlackTree
         {
             Node successor;
 
-            if (node == null)
+            if ( node == null )
             {
                 successor = null;
             }
-            else if (node.leftChild != null)
+            else if ( node.leftChild != null )
             {
                 successor = FindSuccessor(node.leftChild);
             }
@@ -223,26 +223,26 @@ namespace RedBlackTree
         protected Node Find(Node node, T value)
         {
             bool nodeHasTargetValue = (node.value.CompareTo(value) == 0);
-            if (nodeHasTargetValue)
+            if ( nodeHasTargetValue )
             {
                 return node;
             }
 
             Node matchingnode;
 
-            if (node.leftChild != null)
+            if ( node.leftChild != null )
             {
                 matchingnode = Find(node.leftChild, value);
-                if (matchingnode != null)
+                if ( matchingnode != null )
                 {
                     return matchingnode;
                 }
             }
 
-            if (node.rightChild != null)
+            if ( node.rightChild != null )
             {
                 matchingnode = Find(node.rightChild, value);
-                if (matchingnode != null)
+                if ( matchingnode != null )
                 {
                     return matchingnode;
                 }
@@ -407,7 +407,7 @@ namespace RedBlackTree
 
             // Color of a NULL node is considered as BLACK
 
-            bool gotGrandParent = (newNode.parent != null && newNode.parent.parent != null);
+            bool gotGrandParent = ( newNode.parent != null && newNode.parent.parent != null );
             if ( gotGrandParent )
             {
                 Node parent = newNode.parent;
@@ -487,10 +487,10 @@ namespace RedBlackTree
 
         protected void UnbalancedInsert(Node node, Node newNode)
         {
-            if (newNode.value.CompareTo(node.value) < 0)
+            if ( newNode.value.CompareTo(node.value) < 0 )
             {
                 // newValue < value
-                if (node.leftChild == null)
+                if ( node.leftChild == null )
                 {
                     MakeLeftChild(node, newNode);
                 }
@@ -499,7 +499,7 @@ namespace RedBlackTree
                     UnbalancedInsert(node.leftChild, newNode);
                 }
             }
-            else if (newNode.value.CompareTo(node.value) > 0)
+            else if ( newNode.value.CompareTo(node.value) > 0 )
             {
                 // newValue > value
                 if (node.rightChild == null)
@@ -512,7 +512,7 @@ namespace RedBlackTree
                 }
             }
             //else if ( EqualityComparer<T>.Default.Equals(newValue, root.value) )
-            else if (newNode.value.CompareTo(node.value) == 0)
+            else if ( newNode.value.CompareTo(node.value) == 0 )
             {
                 // newValue == value
                 // should never get here.  we require uniqueness, so do not insert duplicate value.
@@ -524,7 +524,7 @@ namespace RedBlackTree
         {
             Node newNode = createNode(newValue);
 
-            if (root == null)
+            if ( root == null )
             {
                 MakeRoot(newNode);
             }
@@ -538,9 +538,9 @@ namespace RedBlackTree
 
         protected void UnbalancedDelete(Node node, out Node nodeDeleted, out Node nodeReplacedDeleted)
         {
-            bool nodeHasNoChildren = ( node.leftChild == null && node.rightChild == null );
+            bool nodeHasNoChildren  = ( node.leftChild == null && node.rightChild == null );
             bool nodeHasTwoChildren = ( node.leftChild != null && node.rightChild != null );
-            bool nodeHasOneChild = ( !nodeHasNoChildren && !nodeHasTwoChildren );
+            bool nodeHasOneChild    = ( !nodeHasNoChildren && !nodeHasTwoChildren );
 
             if ( nodeHasNoChildren )
             {
@@ -599,7 +599,7 @@ namespace RedBlackTree
                 node.value = successor.value;
                 successor.value = swap;
                 // binary tree is now broken since successor's new value breaks the rules
-                // but not to worry, next step is delete successor
+                // but not to worry, next step is to delete successor
 
                 nodeDeleted = successor;
 
@@ -870,10 +870,18 @@ namespace RedBlackTree
             node.color = NodeColor.Black;
         }
 
+        //
+        // Iterator
+        //
 
         // compiler parses "yield return" and 
-        // builds a hidden nested enumerator class and 
-        // refactors below method to return it
+        // builds a hidden nested IEnumerable class 
+        // (who has the all important method GetEnumerator()) and 
+        // refactors below method to return it.
+
+        // wrt foreach (T value in <object>), the compiler implicitly casts <object> 
+        // to IEnumerable<T> and calls its GetEnumerator(), which returns an iterator.
+
         protected IEnumerable<T> RecursivelyIterate(Node node)
         {
             if ( node.leftChild != null )
@@ -906,24 +914,24 @@ namespace RedBlackTree
 
         protected void ValidateInOrderTraverse(Node node, SortedDictionary<T, int> blackNodeCount)
         {
-            if (node == root && root == null)
+            if ( node == root && root == null )
             {
                 return;
             }
 
-            if (root != null && node == root && node.color != NodeColor.Black)
+            if ( root != null && node == root && node.color != NodeColor.Black )
             {
                 Console.WriteLine("**** Violation: root is not black.");
                 throw new System.InvalidOperationException();
             }
 
-            if (node.parent != null && node.color == NodeColor.Red && node.parent.color == NodeColor.Red)
+            if ( node.parent != null && node.color == NodeColor.Red && node.parent.color == NodeColor.Red )
             {
                 Console.WriteLine("**** Violation: two adjacent nodes are red.");
                 throw new System.InvalidOperationException();
             }
 
-            if (node.leftChild == null || node.rightChild == null)
+            if ( node.leftChild == null || node.rightChild == null )
             {
                 blackNodeCount[node.value] = 0;
                 Node thisNode = node;
@@ -937,9 +945,9 @@ namespace RedBlackTree
                 }
             }
 
-            if (node.leftChild != null)
+            if ( node.leftChild != null )
             {
-                if (node.value.CompareTo(node.leftChild.value) < 0)
+                if ( node.value.CompareTo(node.leftChild.value) < 0 )
                 {
                     Console.WriteLine($"**** Violation: value of the node({node.value}) should be greater than the value of its left child({node.leftChild.value}).");
                     throw new System.InvalidOperationException();
@@ -947,9 +955,9 @@ namespace RedBlackTree
                 ValidateInOrderTraverse(node.leftChild, blackNodeCount);
             }
 
-            if (node.rightChild != null)
+            if ( node.rightChild != null )
             {
-                if (node.value.CompareTo(node.rightChild.value) > 0)
+                if ( node.value.CompareTo(node.rightChild.value) > 0 )
                 {
                     Console.WriteLine($"**** Violation: value of the node({node.value}) should be greater than the value of its right child({node.rightChild.value}).");
                     throw new System.InvalidOperationException();
@@ -960,7 +968,7 @@ namespace RedBlackTree
 
         public void ValidateInOrderTraverse(bool includeHeader = true)
         {
-            if (includeHeader)
+            if ( includeHeader )
             {
                 Console.WriteLine("Validating all of the Red Back Tree requirements:\n");
             }
@@ -972,13 +980,13 @@ namespace RedBlackTree
             bool failedToValidate = false;
             foreach (KeyValuePair<T, int> pair in blackNodeCount)
             {
-                if (pair.Value > 0)
+                if ( pair.Value > 0 )
                 {
-                    if (theBlackNodeCountForTree == 0)
+                    if ( theBlackNodeCountForTree == 0 )
                     {
                         theBlackNodeCountForTree = pair.Value;
                     }
-                    else if (pair.Value != theBlackNodeCountForTree)
+                    else if ( pair.Value != theBlackNodeCountForTree )
                     {
                         failedToValidate = true;
                         Console.WriteLine($"**** Violation: found at least two different block node counts for leafs: {theBlackNodeCountForTree} and {pair.Value}.");
@@ -987,7 +995,7 @@ namespace RedBlackTree
                 }
             }
 
-            if (failedToValidate)
+            if ( failedToValidate )
             {
                 Console.Write("**** ( ");
                 foreach (KeyValuePair<T, int> pair in blackNodeCount)
@@ -1006,7 +1014,7 @@ namespace RedBlackTree
         public void LogInOrderTraverse()
         {
             Console.WriteLine("In order traversal of the Red Black Binary Tree. Values should be in sorted order:\n");
-            if (root != null)
+            if ( root != null )
             {
                 LogInOrderTraverse(root);
                 Console.WriteLine("\n");
@@ -1015,7 +1023,7 @@ namespace RedBlackTree
 
         protected void LogInOrderTraverse(Node node)
         {
-            if (node.leftChild != null)
+            if ( node.leftChild != null )
             {
                 LogInOrderTraverse(node.leftChild);
             }
@@ -1025,7 +1033,7 @@ namespace RedBlackTree
                                  "n");
             Console.Write($"{node.value}{nodeColor} ");
 
-            if (node.rightChild != null)
+            if ( node.rightChild != null )
             {
                 LogInOrderTraverse(node.rightChild);
             }
@@ -1033,26 +1041,26 @@ namespace RedBlackTree
 
         protected void LogNode(Node node, string description = "")
         {
-            if (description.Length > 0)
+            if ( description.Length > 0 )
             {
                 Console.Write($"{description} : ");
             }
 
             Node thisNode = node;
-            while (thisNode != null)
+            while ( thisNode != null )
             {
                 char nodeColor = (thisNode.color == NodeColor.Red ? 'r' : thisNode.color == NodeColor.Black ? 'b' : 'n');
-                if (thisNode.parent == null)
+                if ( thisNode.parent == null )
                 {
                     Console.Write($"{thisNode.value}{nodeColor}");
                 }
                 else
                 {
-                    if (thisNode.parent.leftChild == thisNode)
+                    if ( thisNode.parent.leftChild == thisNode )
                     {
                         Console.Write($"{thisNode.value}{nodeColor} < ");
                     }
-                    if (thisNode.parent.rightChild == thisNode)
+                    if ( thisNode.parent.rightChild == thisNode )
                     {
                         Console.Write($"{thisNode.value}{nodeColor} > ");
                     }
@@ -1071,24 +1079,24 @@ namespace RedBlackTree
 
         protected void LogTree(Node node)
         {
-            if (node == root && node == null)
+            if ( node == root && node == null )
             {
                 // empty RBT
                 return;
             }
 
-            if (node.leftChild == null || node.rightChild == null)
+            if ( node.leftChild == null || node.rightChild == null )
             {
                 // we are at a leaf child
                 LogNode(node);
             }
             else
             {
-                if (node.leftChild != null)
+                if ( node.leftChild != null )
                 {
                     LogTree(node.leftChild);
                 }
-                if (node.rightChild != null)
+                if ( node.rightChild != null )
                 {
                     LogTree(node.rightChild);
                 }
@@ -1098,11 +1106,14 @@ namespace RedBlackTree
         //
         // implement ICollection<T>
         //
+        // hint: at coding startup, add the interface ICollection<T>
+        // and let the Visual Studio generate the required, empty methods.
+        //
 
         protected int count { get; set; }
         public int Count { get { return count; } }
 
-        protected bool isReadOnly { get; set; }
+        protected bool isReadOnly { get; set; } // TODO: make Add() and Remove() abide
         public bool IsReadOnly { get { return isReadOnly; } }
 
         public void Add(T item)
@@ -1134,7 +1145,7 @@ namespace RedBlackTree
         public void CopyTo(T[] array, int arrayIndex)
         {
             int idx = arrayIndex;
-            foreach (T value in RecursivelyIterate())
+            foreach (T value in (IEnumerable<T>)this) // make the impicit cast explicit, as a remider how iterators actually works
             {
                 array[idx++] = value;
             }
@@ -1166,7 +1177,7 @@ namespace RedBlackTree
             // since not all paths from root to leaf still have the black count.
 
             bool blackNodeDeleted = (nodeDeleted.color == NodeColor.Black);
-            if (blackNodeDeleted)
+            if ( blackNodeDeleted )
             {
                 BalanceTreeAfterDelete(nodeReplacedDeleted);
                 //LogTree();
