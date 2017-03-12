@@ -1,8 +1,6 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * http://www.geeksforgeeks.org/red-black-tree-set-1-introduction-2/
@@ -48,7 +46,7 @@ using System.Threading.Tasks;
 
 namespace RedBlackTree
 {
-    public class RedBlackTree<T> where T : IComparable // , ICollection<T>, IEnumerable<T>, IEnumerable
+    public class RedBlackTree<T> : ICollection<T> where T : IComparable
     {
         protected enum NodeColor { None, Red, Black };
         protected class Node
@@ -897,6 +895,11 @@ namespace RedBlackTree
             }
         }
 
+        public IEnumerable<T> RecursivelyIterate()
+        {
+            return RecursivelyIterate(root);
+        }
+
         //
         // Validation
         //
@@ -1096,11 +1099,12 @@ namespace RedBlackTree
         // implement ICollection<T>
         //
 
-        // ICollection<T> requires
-        public int Count { get; set; }
-        public bool IsReadOnly { get; set; }
+        protected int count { get; set; }
+        public int Count { get { return count; } }
 
-        // ICollection<T> requires
+        protected bool isReadOnly { get; set; }
+        public bool IsReadOnly { get { return isReadOnly; } }
+
         public void Add(T item)
         {
             Node newNode = UnbalancedInsert(item);
@@ -1112,45 +1116,47 @@ namespace RedBlackTree
             //ValidateInOrderTraverse();
             //LogInOrderTraverse();
 
-            Count++;
+            count++;
         }
 
-        // ICollection<T> requires
         public void Clear()
         {
             root = null;
-            Count = 0;
+            count = 0;
+            isReadOnly = false;
         }
 
-        // ICollection<T> requires
-        public bool Contains(T value)
+        public bool Contains(T item)
         {
-            return (Find(value) != null);
+            return (Find(item) != null);
         }
 
-        // ICollection<T> requires
-        public void CopyTo(T[] array, int arrayInex)
+        public void CopyTo(T[] array, int arrayIndex)
         {
-            int idx = arrayInex;
-            foreach (T value in GetEnumerator())
+            int idx = arrayIndex;
+            foreach (T value in RecursivelyIterate())
             {
                 array[idx++] = value;
             }
         }
 
-        // IEnumerable<T> requires
-        public IEnumerable<T> GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return (root == null ? null : RecursivelyIterate(root));
+            throw new NotImplementedException();
         }
 
-        // ICollection<T> requires
-        public void Remove(T value)
+        public IEnumerator<T> GetEnumerator()
         {
-            Node node = Find(value);
-            if (node == null)
+            IEnumerator<T> iterator = RecursivelyIterate().GetEnumerator();
+            return iterator;
+        }
+
+        public bool Remove(T item)
+        {
+            Node node = Find(item);
+            if ( node == null )
             {
-                throw new System.InvalidOperationException();
+                return false;
             }
 
             Node nodeDeleted, nodeReplacedDeleted;
@@ -1168,7 +1174,9 @@ namespace RedBlackTree
                 //LogInOrderTraverse();
             }
 
-            Count--;
+            count--;
+
+            return true;
         }
     }
 }

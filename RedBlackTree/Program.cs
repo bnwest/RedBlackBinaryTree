@@ -1,5 +1,6 @@
 ﻿using System;
 using RNG;
+using System.Collections.Generic;
 
 namespace RedBlackTree
 {
@@ -69,7 +70,9 @@ namespace RedBlackTree
             redBlackTree.LogInOrderTraverse();
 
             Console.Write("Iterate over Red Black Tree:\n{ ");
-            foreach (int value in redBlackTree.GetEnumerator())
+
+            //foreach (int value in redBlackTree.RecursivelyIterate())
+            foreach (int value in redBlackTree)
             {
                 Console.Write($"{value}, ");
             }
@@ -99,7 +102,6 @@ namespace RedBlackTree
 
             for (int i = 0; i < treeNodeCount; i++)
             {
-                //Console.WriteLine($"Deleting {values[i]} from RBT ...");
                 redBlackTree.Remove(values[i]);
             }
 
