@@ -142,7 +142,7 @@ namespace RedBlackTree
             {
                 Node leftChild = parent.leftChild;
                 parent.leftChild = null;
-                leftChild.parent = null; 
+                leftChild.parent = null;
             }
         }
 
@@ -502,7 +502,7 @@ namespace RedBlackTree
             else if ( newNode.value.CompareTo(node.value) > 0 )
             {
                 // newValue > value
-                if (node.rightChild == null)
+                if ( node.rightChild == null )
                 {
                     MakeRightChild(node, newNode);
                 }
@@ -551,8 +551,8 @@ namespace RedBlackTree
                     bool nodeIsLeftChild  = ( !nodeIsRoot && node == node.parent.leftChild );
                     bool nodeIsRightChild = ( !nodeIsRoot && node == node.parent.rightChild );
                     Node parent = ( node.parent ?? null );
-                    nodeIsLeftChild  = ( node == node.parent?.leftChild );
-                    nodeIsRightChild = ( node == node.parent?.rightChild );
+                    nodeIsLeftChild = (node == node.parent?.leftChild);
+                    nodeIsRightChild = (node == node.parent?.rightChild);
 
                     RemoveChildFromParent(node);
 
@@ -561,7 +561,7 @@ namespace RedBlackTree
                         ResetNullBlack();
                         nodeReplacedDeleted = NullBlack;
 
-                        if (nodeIsLeftChild )
+                        if ( nodeIsLeftChild )
                         {
                             MakeLeftChild(parent, NullBlack);
                         }
@@ -686,10 +686,10 @@ namespace RedBlackTree
 
                     // both node and rightSibling are now black
 
-                    leftChildOfRightSiblingIsBlack  = 
-                        ( rightSibling.leftChild == null || rightSibling.leftChild.color == NodeColor.Black );
-                    rightChildOfRightSiblingIsBlack = 
-                        ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
+                    leftChildOfRightSiblingIsBlack =
+                        (rightSibling.leftChild == null || rightSibling.leftChild.color == NodeColor.Black);
+                    rightChildOfRightSiblingIsBlack =
+                        (rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black);
 
                     if ( leftChildOfRightSiblingIsBlack && rightChildOfRightSiblingIsBlack )
                     {
@@ -722,7 +722,7 @@ namespace RedBlackTree
                         // rightSibling has at least one red child
 
                         rightChildOfRightSiblingIsBlack =
-                            ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
+                            (rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black);
 
                         if ( rightChildOfRightSiblingIsBlack )
                         {
@@ -789,9 +789,9 @@ namespace RedBlackTree
                     // both node and leftSibling are now black
 
                     leftChildOfLeftSiblingIsBlack =
-                        ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black );
+                        (leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
                     rightChildOfLeftSiblingIsBlack =
-                        ( leftSibling.rightChild == null || leftSibling.rightChild.color == NodeColor.Black );
+                        (leftSibling.rightChild == null || leftSibling.rightChild.color == NodeColor.Black);
 
                     if ( leftChildOfLeftSiblingIsBlack && rightChildOfLeftSiblingIsBlack )
                     {
@@ -812,7 +812,7 @@ namespace RedBlackTree
                         // when parent is black => restart the loop with the parent being the extra black node
 
                         Node parent = node.parent;
-                        if (node == NullBlack)
+                        if ( node == NullBlack )
                         {
                             // turn back into a regular null
                             RemoveChildFromParent(node);
@@ -824,7 +824,7 @@ namespace RedBlackTree
                         // leftSibling has at least one red child
 
                         leftChildOfLeftSiblingIsBlack =
-                            ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
+                            (leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
 
                         if ( leftChildOfLeftSiblingIsBlack )
                         {
@@ -886,7 +886,7 @@ namespace RedBlackTree
         {
             if ( node.leftChild != null )
             {
-                foreach (var child in RecursivelyIterate(node.leftChild))
+                foreach ( var child in RecursivelyIterate(node.leftChild) )
                 {
                     yield return child;
                 }
@@ -896,7 +896,7 @@ namespace RedBlackTree
 
             if ( node.rightChild != null )
             {
-                foreach (var child in RecursivelyIterate(node.rightChild))
+                foreach ( var child in RecursivelyIterate(node.rightChild) )
                 {
                     yield return child;
                 }
@@ -935,9 +935,9 @@ namespace RedBlackTree
             {
                 blackNodeCount[node.value] = 0;
                 Node thisNode = node;
-                while (thisNode != null)
+                while ( thisNode != null )
                 {
-                    if (thisNode.color == NodeColor.Black)
+                    if ( thisNode.color == NodeColor.Black )
                     {
                         blackNodeCount[node.value]++;
                     }
@@ -978,7 +978,7 @@ namespace RedBlackTree
 
             int theBlackNodeCountForTree = 0;
             bool failedToValidate = false;
-            foreach (KeyValuePair<T, int> pair in blackNodeCount)
+            foreach ( KeyValuePair<T, int> pair in blackNodeCount )
             {
                 if ( pair.Value > 0 )
                 {
@@ -998,7 +998,7 @@ namespace RedBlackTree
             if ( failedToValidate )
             {
                 Console.Write("**** ( ");
-                foreach (KeyValuePair<T, int> pair in blackNodeCount)
+                foreach ( KeyValuePair<T, int> pair in blackNodeCount )
                 {
                     Console.Write($"({pair.Key}, {pair.Value}) ");
                 }
@@ -1145,7 +1145,7 @@ namespace RedBlackTree
         public void CopyTo(T[] array, int arrayIndex)
         {
             int idx = arrayIndex;
-            foreach (T value in (IEnumerable<T>)this) // make the impicit cast explicit, as a remider how iterators actually works
+            foreach ( T value in (IEnumerable<T>) this ) // make the impicit cast explicit, as a remider how iterators actually works
             {
                 array[idx++] = value;
             }

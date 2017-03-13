@@ -13,11 +13,11 @@ namespace RedBlackTree
             int valueCount = values.GetLength(0);
 
             int collisions = 0;
-            for (int i = 0; i < 10 * valueCount; i++)
+            for ( int i = 0; i < 10 * valueCount; i++ )
             {
                 int idx1 = rng.Next(valueCount);
                 int idx2 = rng.Next(valueCount);
-                if (idx1 != idx2)
+                if ( idx1 != idx2 )
                 {
                     // swap values[idx1] with values[idx2]
                     int swap = values[idx1];
@@ -36,7 +36,7 @@ namespace RedBlackTree
             const int treeNodeCount = 100; // readonly instead?
 
             int[] values = new int[treeNodeCount];
-            for (int i = 0; i < treeNodeCount; i++)
+            for ( int i = 0; i < treeNodeCount; i++ )
             {
                 values[i] = i + 1;
             }
@@ -52,7 +52,7 @@ namespace RedBlackTree
             // values = new int[treeNodeCount] { 8, 1, 3, 6, 2, 10, 4, 7, 5, 9 };
 
             Console.Write("Insert order: { ");
-            foreach (var value in values) Console.Write($"{value}, ");
+            foreach ( var value in values ) Console.Write($"{value}, ");
             Console.WriteLine("}\n");
 
             //
@@ -61,7 +61,7 @@ namespace RedBlackTree
 
             var redBlackTree = new RedBlackTree<int>();
 
-            for (int i = 0; i < treeNodeCount; i++)
+            for ( int i = 0; i < treeNodeCount; i++ )
             {
                 redBlackTree.Add(values[i]);
             }
@@ -74,7 +74,7 @@ namespace RedBlackTree
             //
 
             Console.Write("Iterate over Red Black Tree:\n{ ");
-            foreach (int value in redBlackTree)
+            foreach ( int value in redBlackTree )
             {
                 Console.Write($"{value}, ");
             }
@@ -99,14 +99,14 @@ namespace RedBlackTree
             // delete order: values = new int[treeNodeCount] { 7, 3, 6, 4, 8, 2, 9, 10, 5, 1, }; // LCase {2,3,4} RCase {2,4}
 
             Console.Write("Delete order: { ");
-            foreach (var value in values) Console.Write($"{value}, ");
+            foreach ( var value in values ) Console.Write($"{value}, ");
             Console.WriteLine("}\n");
 
             //
             // delete nodes in the Red Black Tree.
             //
 
-            for (int i = 0; i < treeNodeCount; i++)
+            for ( int i = 0; i < treeNodeCount; i++ )
             {
                 redBlackTree.Remove(values[i]);
             }

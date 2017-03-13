@@ -27,7 +27,7 @@ namespace RNG
             byte[] bytes = new byte[4];
             rng.GetBytes(bytes);
             UInt32 random = BitConverter.ToUInt32(bytes, 0); // [0, UInt32.MaxValue], UInt32.MaxValue + 1 possible values
-            return ( (double)random / ((double)UInt32.MaxValue + 1.0) );
+            return ((double) random / ((double) UInt32.MaxValue + 1.0));
         }
 
         //
@@ -81,7 +81,7 @@ namespace RNG
 
         private void SetSeed()
         {
-            this.seed = (int)((ulong)DateTime.Now.Ticks % int.MaxValue); // 0 <= seed < int.MaxValue
+            this.seed = (int) ((ulong) DateTime.Now.Ticks % int.MaxValue); // 0 <= seed < int.MaxValue
         }
 
         private void SetSeed(int seed)
@@ -101,7 +101,7 @@ namespace RNG
             int hi = seed / q;
             int lo = seed % q;
             seed = (a * lo) - (r * hi);
-            if (seed <= 0)
+            if ( seed <= 0 )
                 seed = seed + m;
             return (seed * 1.0) / m;
         }
