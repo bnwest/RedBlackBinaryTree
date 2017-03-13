@@ -162,7 +162,7 @@ namespace RedBlackTree
 
             bool parentHasNoChildren = ( parent.leftChild == null && parent.rightChild == null );
             bool parentHasTwoChildren = ( parent.leftChild != null && parent.rightChild != null );
-            bool parentHasOneChild = ( !parentHasNoChildren && !parentHasTwoChildren);
+            bool parentHasOneChild = ( !parentHasNoChildren && !parentHasTwoChildren );
 
             if ( parentHasOneChild )
             {
@@ -306,8 +306,8 @@ namespace RedBlackTree
             bool gotParent = ( node.parent != null );
             if ( gotParent )
             {
-                bool isNodeParentLeftChild = (node.parent.leftChild == node);
-                bool isNodeParentRightChild = (node.parent.rightChild == node);
+                bool isNodeParentLeftChild = ( node.parent.leftChild == node );
+                bool isNodeParentRightChild = ( node.parent.rightChild == node );
 
                 if ( isNodeParentLeftChild )
                 {
@@ -551,8 +551,8 @@ namespace RedBlackTree
                     bool nodeIsLeftChild  = ( !nodeIsRoot && node == node.parent.leftChild );
                     bool nodeIsRightChild = ( !nodeIsRoot && node == node.parent.rightChild );
                     Node parent = ( node.parent ?? null );
-                    nodeIsLeftChild = (node == node.parent?.leftChild);
-                    nodeIsRightChild = (node == node.parent?.rightChild);
+                    nodeIsLeftChild = ( node == node.parent?.leftChild );
+                    nodeIsRightChild = ( node == node.parent?.rightChild );
 
                     RemoveChildFromParent(node);
 
@@ -687,9 +687,9 @@ namespace RedBlackTree
                     // both node and rightSibling are now black
 
                     leftChildOfRightSiblingIsBlack =
-                        (rightSibling.leftChild == null || rightSibling.leftChild.color == NodeColor.Black);
+                        ( rightSibling.leftChild == null || rightSibling.leftChild.color == NodeColor.Black );
                     rightChildOfRightSiblingIsBlack =
-                        (rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black);
+                        ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
 
                     if ( leftChildOfRightSiblingIsBlack && rightChildOfRightSiblingIsBlack )
                     {
@@ -722,7 +722,7 @@ namespace RedBlackTree
                         // rightSibling has at least one red child
 
                         rightChildOfRightSiblingIsBlack =
-                            (rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black);
+                            ( rightSibling.rightChild == null || rightSibling.rightChild.color == NodeColor.Black );
 
                         if ( rightChildOfRightSiblingIsBlack )
                         {
@@ -789,9 +789,9 @@ namespace RedBlackTree
                     // both node and leftSibling are now black
 
                     leftChildOfLeftSiblingIsBlack =
-                        (leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
+                        ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black );
                     rightChildOfLeftSiblingIsBlack =
-                        (leftSibling.rightChild == null || leftSibling.rightChild.color == NodeColor.Black);
+                        ( leftSibling.rightChild == null || leftSibling.rightChild.color == NodeColor.Black );
 
                     if ( leftChildOfLeftSiblingIsBlack && rightChildOfLeftSiblingIsBlack )
                     {
@@ -824,7 +824,7 @@ namespace RedBlackTree
                         // leftSibling has at least one red child
 
                         leftChildOfLeftSiblingIsBlack =
-                            (leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black);
+                            ( leftSibling.leftChild == null || leftSibling.leftChild.color == NodeColor.Black );
 
                         if ( leftChildOfLeftSiblingIsBlack )
                         {
@@ -1139,7 +1139,7 @@ namespace RedBlackTree
 
         public bool Contains(T item)
         {
-            return (Find(item) != null);
+            return ( Find(item) != null );
         }
 
         public void CopyTo(T[] array, int arrayIndex)
